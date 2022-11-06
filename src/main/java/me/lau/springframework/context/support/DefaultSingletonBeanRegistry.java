@@ -41,6 +41,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         singletonFactories.remove(beanName);
     }
 
+    public void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
+        singletonFactories.put(beanName, singletonFactory);
+    }
+
     public void registerDisposableBean(String beanName, DisposableBean bean) {
         this.disposableBeanMap.put(beanName, bean);
     }

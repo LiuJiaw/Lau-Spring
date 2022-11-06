@@ -8,6 +8,7 @@ import me.lau.springframework.beans.factory.BeanFactory;
 import me.lau.springframework.beans.factory.BeanFactoryAware;
 import me.lau.springframework.beans.factory.ConfigurableListableBeanFactory;
 import me.lau.springframework.beans.factory.annotation.Autowired;
+import me.lau.springframework.beans.factory.annotation.Qualifier;
 import me.lau.springframework.beans.factory.annotation.Value;
 import me.lau.springframework.core.convert.ConversionService;
 
@@ -25,7 +26,7 @@ public class AutowiredAnnotationBeanPostProcessor implements InstantiationAwareB
 
     @Override
     public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
-
+        return null;
     }
 
     @Override
@@ -61,9 +62,25 @@ public class AutowiredAnnotationBeanPostProcessor implements InstantiationAwareB
             Autowired autowiredAnnotation = field.getAnnotation(Autowired.class);
             if(Objects.nonNull(autowiredAnnotation)) {
                 Class<?> fieldType = field.getType();
+                String fieldName = field.getName();
+                Qualifier qualifierAnnotation = field.getAnnotation(Qualifier.class);
+                if(Objects.nonNull(qualifierAnnotation)) {
+                    fieldName = qualifierAnnotation.value();
+                }
 
+                Object dependentBean = null;
+                if(Objects.nonNull(fieldName)) {
+                    dependentBean = beanFactory.getBean(fieldName, fieldType);
+                }
+                if(Objects.isNull(dependentBean)) {
+                    dependentBean = beanFactory.getBean(fieldType);
+                }
+
+                BeanUtil.setFieldValue(bean, fieldName, dependentBean);
             }
         }
+
+        return pvs;
     }
 
     @Override
